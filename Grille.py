@@ -3,6 +3,7 @@
 # =============================================================================
 
 import numpy as np
+from Exceptions import IllegalMoveError
 
 VIDE = 2
 NOIR, MACHINE = 1, 1
@@ -46,9 +47,9 @@ class Grille :
     def resetGrille(self, newGrille):
         """ Reset la grille à partir d'une nouvelle grille """
         VB, VN, VV = newGrille.getVector(BLANC), newGrille.getVector(NOIR), newGrille.getVector(VIDE)
-        self.__VB = VB
-        self.__VN = VN
-        self.__VV = VV
+        self.__VB = VB[:] # faisons une copie et non une = entre 2 variables
+        self.__VN = VN[:]
+        self.__VV = VV[:]
 
     # =============================================================================
     #                       Fonctions utiles à la grille
@@ -71,11 +72,10 @@ class Grille :
                 # On ajoute la case à la liste de la bonne couleur
                 self.__VV.append(Case)
             else :
-                raise IllegalMoveError()
-        except Exception as error:
+                raise IllegalMoveError("in - Grille.echangerCase")
+        except IllegalMoveError as error:
             print("ERROR : Oops! That was an illegal move. Try again...")
-            print("ERROR : %s, %s"%(type(error), error))
-            print("DEBUG : Handling error in handleError function...")
+            print("\t[error_type] %s, \n\t[error] %s"%(type(error), error))
         # DEBUG: traceback.print_exc()
         return self
 

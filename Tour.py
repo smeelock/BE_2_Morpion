@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import time
 
 from Grille import *
 # from Exceptions import depthError
@@ -99,35 +100,35 @@ class TourMinMax(Tour):
     def getMaxDepth(self):
         return self.__maximumDepth
 
-    def plateauxSuccesseursMoinsDe_NbPions(self, Color):
+    def plateauxSuccesseursMoinsDe_NbPions(self, grille, Color):
         """ Génère tous les successeur du plateau où on n’a pas encore joué nbPions pions """
         # On récupère le vecteur correspondant à la couleur
-        VC = self._Grille.getVector(Color)
-        VV = self._Grille.getVector(VIDE)
+        VC = grille.getVector(Color)
+        VV = grille.getVector(VIDE)
 
         liste = []
-        N, nbPions = self._Grille.getDim(), self._Grille.getNbPions()
+        N, nbPions = grille.getDim(), grille.getNbPions()
 
         for case in VV :
             newGrille = Grille(N, nbPions) # on __init__ une nouvelle grille
-            newGrille.resetGrille(self._Grille) # on y copie la grille actuelle
+            newGrille.resetGrille(grille) # on y copie la grille actuelle
             newGrille.echangerCase(case, Color, placer="PLACER") # on effectue le mvt
             liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
 
         return liste
 
-    def plateauxSuccesseursDeja_nbPions(self, Color):
+    def plateauxSuccesseursDeja_nbPions(self, grille, Color):
         """ Génère tous les plateaux possibles où on enlève un pion playingColor et on le place dans une case vide (autre que celle qu’on vient de vider) """
         # On récupère le vecteur correspondant à la couleur
-        VC = self._Grille.getVector(Color)
-        VV = self._Grille.getVector(VIDE)
+        VC = grille.getVector(Color)
+        VV = grille.getVector(VIDE)
 
         liste = []
-        N, nbPions = self._Grille.getDim(), self._Grille.getNbPions()
+        N, nbPions = grille.getDim(), grille.getNbPions()
 
         for case in VC :
             newGrille = Grille(N, nbPions) # on __init__ une nouvelle grille
-            newGrille.resetGrille(self._Grille) # on y copie la grille actuelle
+            newGrille.resetGrille(grille) # on y copie la grille actuelle
             newGrille.echangerCase(case, Color, placer="LIBERER") # on enlève ce pion
 
             for caseVide in VV :
@@ -137,13 +138,15 @@ class TourMinMax(Tour):
 
         return liste
 
-    def minMax(self, profondeur, mode, playingColor):
+    def minMax(self, grille, profondeur, mode, playingColor):
         """ MinMax """
+        # print("DEBUG: playingColor {}".format(playingColor))
+        # print("DEBUG: profondeur {}".format(profondeur))
         # Condition d'arrêt de l'appel récursif :
         oldColor = not(playingColor)
-        if not self._Grille.isEmpty():
-            if profondeur == 0 or self._Grille.gagnant(oldColor): # plateau gagnant ou profondeur max atteinte
-                return (self._Grille, self._Grille.valeurPlateau(oldColor))
+        if not grille.isEmpty():
+            if profondeur == 0 or grille.gagnant(oldColor): # plateau gagnant ou profondeur max atteinte
+                return (grille, grille.valeurPlateau(oldColor))
 
         # Initialisation des variables utiles
         minScore = np.inf
@@ -151,17 +154,17 @@ class TourMinMax(Tour):
         meilleureCaseAJouer = None
         listePlateauxSuccesseurs = []
 
-        VC = self._Grille.getVector(playingColor)
+        VC = grille.getVector(playingColor)
 
         # Récupération des plateaux successeurs
-        if len(VC) < self._Grille.getNbPions():
-            listePlateauxSuccesseurs = self.plateauxSuccesseursMoinsDe_NbPions(playingColor)
+        if len(VC) < grille.getNbPions():
+            listePlateauxSuccesseurs = self.plateauxSuccesseursMoinsDe_NbPions(grille, playingColor)
         else:
-            listePlateauxSuccesseurs = self.plateauxSuccesseursDeja_nbPions(playingColor)
+            listePlateauxSuccesseurs = self.plateauxSuccesseursDeja_nbPions(grille, playingColor)
 
         # Calcul des valeurs de ces plateaux par appels successifs de minMax
         for plateau in listePlateauxSuccesseurs: # ~foreach child of node DO :
-            plateau_renvoye_par_minMax, score = self.minMax(profondeur-1, not(mode), not(playingColor)) # not() pour changer de min à max et blanc à noir
+            plateau_renvoye_par_minMax, score = self.minMax(plateau, profondeur-1, not(mode), not(playingColor)) # not() pour changer de min à max et blanc à noir
 
             # Màj des scores calculés par minMax
             if mode == MAX:
@@ -177,11 +180,20 @@ class TourMinMax(Tour):
                     minScore = bestScore
         return (bestPlateau, bestScore)
 
-    def jouerUnTour(self, profondeur=6):
+    def jouerUnTour(self, profondeur=3):
         """ Jouer un tour """
-        # profondeur = 6
+        # Si l'ordi est premier à jouer, jouer au centre par défaut (à cause de RecursionError...)
+        if self._Grille.isEmpty():
+            N = self._Grille.getDim()
+            self._Grille.echangerCase((N//2, N//2), self._Color, placer="PLACER")
+            return
+
+        # Jouons avec minMax
+        timeInit = time.time()
         mode = MAX
-        newPlateau, valeurPlateau = self.minMax(profondeur, mode, self._Color)
+        newPlateau, valeurPlateau = self.minMax(self._Grille, profondeur, mode, self._Color)
+        print("INFO: minMax computed in {}s".format(time.time() - timeInit))
+        newPlateau.afficherGrilleConsole()
         self._Grille.resetGrille(newPlateau)
 
 # =============================================================================
@@ -197,35 +209,35 @@ class TourAlphaBeta(Tour):
     def getMaxDepth(self):
         return self.__maximumDepth
 
-    def plateauxSuccesseursMoinsDe_NbPions(self, Color):
+    def plateauxSuccesseursMoinsDe_NbPions(self, grille, Color):
         """ Génère tous les successeur du plateau où on n’a pas encore joué nbPions pions """
         # On récupère le vecteur correspondant à la couleur
-        VC = self._Grille.getVector(Color)
-        VV = self._Grille.getVector(VIDE)
+        VC = grille.getVector(Color)
+        VV = grille.getVector(VIDE)
 
         liste = []
-        N, nbPions = self._Grille.getDim(), self._Grille.getNbPions()
+        N, nbPions = grille.getDim(), grille.getNbPions()
 
         for case in VV :
             newGrille = Grille(N, nbPions) # on __init__ une nouvelle grille
-            newGrille.resetGrille(self._Grille) # on y copie la grille actuelle
+            newGrille.resetGrille(grille) # on y copie la grille actuelle
             newGrille.echangerCase(case, Color, placer="PLACER") # on effectue le mvt
             liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
 
         return liste
 
-    def plateauxSuccesseursDeja_nbPions(self, Color):
+    def plateauxSuccesseursDeja_nbPions(self, grille, Color):
         """ Génère tous les plateaux possibles où on enlève un pion playingColor et on le place dans une case vide (autre que celle qu’on vient de vider) """
         # On récupère le vecteur correspondant à la couleur
-        VC = self._Grille.getVector(Color)
-        VV = self._Grille.getVector(VIDE)
+        VC = grille.getVector(Color)
+        VV = grille.getVector(VIDE)
 
         liste = []
-        N, nbPions = self._Grille.getDim(), self._Grille.getNbPions()
+        N, nbPions = grille.getDim(), grille.getNbPions()
 
         for case in VC :
             newGrille = Grille(N, nbPions) # on __init__ une nouvelle grille
-            newGrille.resetGrille(self._Grille) # on y copie la grille actuelle
+            newGrille.resetGrille(grille) # on y copie la grille actuelle
             newGrille.echangerCase(case, Color, placer="LIBERER") # on enlève ce pion
 
             for caseVide in VV :
@@ -235,7 +247,7 @@ class TourAlphaBeta(Tour):
 
         return liste
 
-    def alphaBeta(self, profondeur, mode, playingColor, alpha, beta):
+    def alphaBeta(self, Grille, profondeur, mode, playingColor, alpha, beta):
         """ Alpha Beta : improvement of minmax algorithm
             -------------
             alpha : minimum score assured for maximizing player
@@ -243,12 +255,14 @@ class TourAlphaBeta(Tour):
         """
         # L'objectif est d'écarter des branches qui n'influencerons pas la décision finale
         # https://en.wikipedia.org/wiki/Alpha–beta_pruning
+        # alpha/beta cut-off : il est inutile de poursuivre l'évaluation des child de cette branche
+        #                      car on a prouvé qu'elle était (strictement) moins bien qu'au moins une autre (alpha >= beta)
 
         # Condition d'arrêt de l'appel récursif (idem minMax):
         oldColor = not(playingColor)
-        if not self._Grille.isEmpty():
-            if profondeur == 0 or self._Grille.gagnant(oldColor): # plateau gagnant ou profondeur max atteinte
-                return (self._Grille, self._Grille.valeurPlateau(oldColor))
+        if not Grille.isEmpty():
+            if profondeur == 0 or Grille.gagnant(oldColor): # plateau gagnant ou profondeur max atteinte
+                return (Grille, Grille.valeurPlateau(oldColor))
 
         # Initialisation des variables utiles
         minScore = np.inf
@@ -256,17 +270,17 @@ class TourAlphaBeta(Tour):
         meilleureCaseAJouer = None
         listePlateauxSuccesseurs = []
 
-        VC = self._Grille.getVector(playingColor)
+        VC = Grille.getVector(playingColor)
 
         # Récupération des plateaux successeurs
-        if len(VC) < self._Grille.getNbPions():
-            listePlateauxSuccesseurs = self.plateauxSuccesseursMoinsDe_NbPions(playingColor)
+        if len(VC) < Grille.getNbPions():
+            listePlateauxSuccesseurs = self.plateauxSuccesseursMoinsDe_NbPions(Grille, playingColor)
         else:
-            listePlateauxSuccesseurs = self.plateauxSuccesseursDeja_nbPions(playingColor)
+            listePlateauxSuccesseurs = self.plateauxSuccesseursDeja_nbPions(Grille, playingColor)
 
         # Calcul des valeurs de ces plateaux par appels successifs de minMax
         for plateau in listePlateauxSuccesseurs: # ~foreach child of node DO :
-            plateau_renvoye_par_alphaBeta, score = self.alphaBeta(profondeur-1, not(mode), not(playingColor), alpha, beta) # not() pour changer de min à max et blanc à noir
+            plateau_renvoye_par_alphaBeta, score = self.alphaBeta(grille, profondeur-1, not(mode), not(playingColor), alpha, beta) # not() pour changer de min à max et blanc à noir
 
             # Màj des scores calculés par minMax et condition d'arrêt AlphaBeta
             if mode == MAX:
@@ -275,7 +289,7 @@ class TourAlphaBeta(Tour):
                     bestPlateau = plateau_renvoye_par_alphaBeta
                     maxScore = bestScore
 
-                alpha = np.max(alpha, score)
+                alpha = max(alpha, score)
                 if alpha >= beta : # Condition d'arrêt AlphaBeta
                     break # beta cut-off
 
@@ -285,7 +299,7 @@ class TourAlphaBeta(Tour):
                     bestPlateau = plateau_renvoye_par_alphaBeta
                     minScore = bestScore
 
-                beta = np.min(beta, score)
+                beta = min(beta, score)
                 if alpha >= beta : # Condition d'arrêt AlphaBeta
                     break # alpha cut-off
 
@@ -293,4 +307,17 @@ class TourAlphaBeta(Tour):
 
     def jouerUnTour(self, profondeur=6):
         """ Jouer un tour """
-        pass
+        # Si l'ordi est premier à jouer, jouer au centre par défaut (à cause de RecursionError...)
+        if self._Grille.isEmpty():
+            N = self._Grille.getDim()
+            self._Grille.echangerCase((N//2, N//2), self._Color, placer="PLACER")
+            return
+
+        # Jouons avec Alpha Beta
+        timeInit = time.time()
+        mode = MAX
+        alpha = -np.inf
+        beta = np.inf
+        newPlateau, valeurPlateau = self.alphaBeta(self._Grille, profondeur, mode, self._Color, alpha, beta)
+        print("INFO: Alpha Beta computed in {}s".format(time.time() - timeInit))
+        self._Grille.resetGrille(newPlateau)

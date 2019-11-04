@@ -103,6 +103,7 @@ class JeuMorpion :
             self.__Application.getButtonList()[fromTuple2Number(VV[-1][0], VV[-1][1])]["text"]=''
                     # puisque l'on .append(), la case en question est la dernière ajoutée, d'où -1
         # Imprimer
+        # print("DEBUG: imprimer dans le bouton {}, n°{}".format(VC[-1], fromTuple2Number(VC[-1][0], VC[-1][1])))
         self.__Application.getButtonList()[fromTuple2Number(VC[-1][0], VC[-1][1])]["text"]=UI[Color] # idem
 
 
@@ -164,8 +165,8 @@ class JeuMorpion :
                 X, Y = int(X), int(Y)
 
                 if X >= self.__dim or Y >= self.__dim : raise IndexError # vérifions que les coordonées sont dans les bornes
-                elif placer == "PLACER" and (X, Y) not in VV : raise IllegalMoveError # Vérifions que la case à placer est bien disponible
-                elif placer == "LIBERER" and (X, Y) not in VC : raise IllegalMoveError # Vérifions que la case à libérer est bien libérable
+                elif placer == "PLACER" and (X, Y) not in VV : raise IllegalMoveError("in - JeuMorpion.lireCaseConsole") # Vérifions que la case à placer est bien disponible
+                elif placer == "LIBERER" and (X, Y) not in VC : raise IllegalMoveError("in - JeuMorpion.lireCaseConsole") # Vérifions que la case à libérer est bien libérable
 
             except (ValueError, IndexError, IllegalMoveError) as e :
                 self.handleError(e)
@@ -198,8 +199,8 @@ class JeuMorpion :
 
                 # Transformons en tuple d'int
                 (X, Y) = (int(X), int(Y))
-                if placer == "PLACER" and (X, Y) not in VV : raise IllegalMoveError # Vérifions que la case à placer est bien disponible
-                elif placer == "LIBERER" and (X, Y) not in VC : raise IllegalMoveError # Vérifions que la case à libérer est bien libérable
+                if placer == "PLACER" and (X, Y) not in VV : raise IllegalMoveError("in - JeuMorpion.lireCaseUI") # Vérifions que la case à placer est bien disponible
+                elif placer == "LIBERER" and (X, Y) not in VC : raise IllegalMoveError("in - JeuMorpion.lireCaseUI") # Vérifions que la case à libérer est bien libérable
 
             except (ValueError, TypeError, IndexError, IllegalMoveError) as e :
                 self.handleError(e)
@@ -245,7 +246,7 @@ class JeuMorpion :
             print("ERROR : Oops! That was an illegal move. Try again...")
         else :
             print("ERROR : Oops! An error occurred but idk why. Try again...")
-        print("ERROR : %s, %s"%(type_err, error))
+        print("\t[error_type] %s, \n\t[error] %s"%(type_err, error))
         print("DEBUG : Handling error in handleError function...")
         # DEBUG: traceback.print_exc()
 
@@ -297,9 +298,9 @@ class JeuMorpion :
 
     def placer_pion_machine(self, Color):
         """ Joue le tour de la machine """
-        tour = self.__TAB_TOUR[self.__ModeJeu](self.__Grille, Color)
-        tour.jouerUnTour()
-        del tour
+        tour = self.__TAB_TOUR[self.__ModeJeu](self.__Grille, Color) # on crée une instance de Tour (le mode indique quel constructeur appeler)
+        tour.jouerUnTour() # jouons un tour
+        del tour # on n'a plus besoin de l'instance de Tour
 
     def placer_pion_2machines(self, Color):
         """ Joue le tour de la machine contre elle même """
@@ -336,6 +337,7 @@ class JeuMorpion :
 
                 if self.__inGame :
                     color = not(color) # changeColor
+                    # print("DEBUG: i am switching colors")
             except FinDuJeuParRepetitionError :
                 print("ERROR : Oops! Feels something like Déjà Vu...")
                 break
