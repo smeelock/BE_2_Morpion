@@ -170,17 +170,17 @@ class TourMinMax(Tour):
             if mode == MAX:
                 if score > maxScore:
                     bestScore = score
-                    bestPlateau = plateau_renvoye_par_minMax
+                    bestPlateau = plateau
                     maxScore = bestScore
 
             else:
                 if score < minScore:
                     bestScore = score
-                    bestPlateau = plateau_renvoye_par_minMax
+                    bestPlateau = plateau
                     minScore = bestScore
         return (bestPlateau, bestScore)
 
-    def jouerUnTour(self, profondeur=3):
+    def jouerUnTour(self, profondeur=2):
         """ Jouer un tour """
         # Si l'ordi est premier à jouer, jouer au centre par défaut (à cause de RecursionError...)
         if self._Grille.isEmpty():
