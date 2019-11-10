@@ -286,7 +286,7 @@ class TourAlphaBeta(Tour):
             if mode == MAX:
                 if score > maxScore:
                     bestScore = score
-                    bestPlateau = plateau_renvoye_par_alphaBeta
+                    bestPlateau = plateau
                     maxScore = bestScore
 
                 alpha = max(alpha, score)
@@ -296,7 +296,7 @@ class TourAlphaBeta(Tour):
             else:
                 if score < minScore:
                     bestScore = score
-                    bestPlateau = plateau_renvoye_par_alphaBeta
+                    bestPlateau = plateau
                     minScore = bestScore
 
                 beta = min(beta, score)
