@@ -133,7 +133,7 @@ class TourMinMax(Tour):
 
             for caseVide in VV :
                 if caseVide != case:
-                    newGrille.echangerCase(case, Color, placer="PLACER")
+                    newGrille.echangerCase(caseVide, Color, placer="PLACER")
                     liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
 
         return liste
