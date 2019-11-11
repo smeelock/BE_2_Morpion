@@ -134,8 +134,15 @@ class TourMinMax(Tour):
             for caseVide in VV :
                 if caseVide != case:
                     newGrille.echangerCase(caseVide, Color, placer="PLACER")
+<<<<<<< HEAD
                     liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
                     
+=======
+                    liste.append(newGrille.copy()) # on ajoute une copie à la liste des mvts possibles
+
+                    newGrille.echangerCase(caseVide, Color, placer="LIBERER") # on le ré-enlève ce pion
+
+>>>>>>> 25d6b5206f8482569e28abc09f54e5a3fa378212
         return liste
 
     def minMax(self, grille, profondeur, mode, playingColor):
@@ -242,8 +249,16 @@ class TourAlphaBeta(Tour):
 
             for caseVide in VV :
                 if caseVide != case:
+<<<<<<< HEAD
                     newGrille.echangerCase(caseVide, Color, placer="PLACER")
                     liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
+=======
+                    newGrille.echangerCase(case, Color, placer="PLACER")
+                    liste.append(newGrille.copy()) # on l'ajoute à la liste des mvts possibles
+
+                    newGrille.echangerCase(caseVide, Color, placer="LIBERER") # on le ré-enlève ce pion
+
+>>>>>>> 25d6b5206f8482569e28abc09f54e5a3fa378212
 
         return liste
 

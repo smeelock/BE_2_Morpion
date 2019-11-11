@@ -108,6 +108,12 @@ class Grille :
     def isEmpty(self):
         return len(self.__VV) >= self.__dim**2 # si toutes les cases sont vides c'est que la grille est vierge
 
+    def copy(self):
+        """ Renvoie une copie de la grille """
+        newGrille = Grille(self.__dim, self.__nbPions) # on __init__ une nouvelle grille
+        newGrille.resetGrille(self) # on y copie la grille actuelle
+        return newGrille
+
     # =============================================================================
     #                      Fonctions utiles pour l'affichage
     # =============================================================================
