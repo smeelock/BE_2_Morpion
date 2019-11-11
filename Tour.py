@@ -135,7 +135,7 @@ class TourMinMax(Tour):
                 if caseVide != case:
                     newGrille.echangerCase(caseVide, Color, placer="PLACER")
                     liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
-
+                    
         return liste
 
     def minMax(self, grille, profondeur, mode, playingColor):
@@ -180,7 +180,7 @@ class TourMinMax(Tour):
                     minScore = bestScore
         return (bestPlateau, bestScore)
 
-    def jouerUnTour(self, profondeur=2):
+    def jouerUnTour(self, profondeur=4):
         """ Jouer un tour """
         # Si l'ordi est premier à jouer, jouer au centre par défaut (à cause de RecursionError...)
         if self._Grille.isEmpty():
@@ -190,7 +190,7 @@ class TourMinMax(Tour):
 
         # Jouons avec minMax
         timeInit = time.time()
-        mode = MAX
+        mode = MIN
         newPlateau, valeurPlateau = self.minMax(self._Grille, profondeur, mode, self._Color)
         print("INFO: minMax computed in {}s".format(time.time() - timeInit))
         newPlateau.afficherGrilleConsole()
@@ -242,7 +242,7 @@ class TourAlphaBeta(Tour):
 
             for caseVide in VV :
                 if caseVide != case:
-                    newGrille.echangerCase(case, Color, placer="PLACER")
+                    newGrille.echangerCase(caseVide, Color, placer="PLACER")
                     liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
 
         return liste
@@ -280,7 +280,7 @@ class TourAlphaBeta(Tour):
 
         # Calcul des valeurs de ces plateaux par appels successifs de minMax
         for plateau in listePlateauxSuccesseurs: # ~foreach child of node DO :
-            plateau_renvoye_par_alphaBeta, score = self.alphaBeta(grille, profondeur-1, not(mode), not(playingColor), alpha, beta) # not() pour changer de min à max et blanc à noir
+            plateau_renvoye_par_alphaBeta, score = self.alphaBeta(plateau, profondeur-1, not(mode), not(playingColor), alpha, beta) # not() pour changer de min à max et blanc à noir
 
             # Màj des scores calculés par minMax et condition d'arrêt AlphaBeta
             if mode == MAX:
