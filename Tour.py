@@ -134,7 +134,9 @@ class TourMinMax(Tour):
             for caseVide in VV :
                 if caseVide != case:
                     newGrille.echangerCase(caseVide, Color, placer="PLACER")
-                    liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
+                    liste.append(newGrille.copy()) # on ajoute une copie à la liste des mvts possibles
+
+                    newGrille.echangerCase(caseVide, Color, placer="LIBERER") # on le ré-enlève ce pion
 
         return liste
 
@@ -243,7 +245,10 @@ class TourAlphaBeta(Tour):
             for caseVide in VV :
                 if caseVide != case:
                     newGrille.echangerCase(case, Color, placer="PLACER")
-                    liste.append(newGrille) # on l'ajoute à la liste des mvts possibles
+                    liste.append(newGrille.copy()) # on l'ajoute à la liste des mvts possibles
+
+                    newGrille.echangerCase(caseVide, Color, placer="LIBERER") # on le ré-enlève ce pion
+
 
         return liste
 
